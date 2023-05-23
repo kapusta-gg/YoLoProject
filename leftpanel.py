@@ -3,10 +3,10 @@ from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QPixmap
 import cv2
 
-LABEL_SIZE = QSize(100, 20)
+LABEL_SIZE = QSize(200, 20)
 MODEL_IMAGE_URL = "changed_im.png"
 BETWEEN_RANGE_MIN = 10
-BETWEEN_RANGE_MAX = 100
+BETWEEN_RANGE_MAX = 200
 
 
 class LeftPanel(QFrame):
@@ -19,13 +19,14 @@ class LeftPanel(QFrame):
         self.model = model
         self.image_label = image_label
         self.image = None
-        self.coef = None
+        self.coef_platform = None
+        self.coef_edge = None
 
-        self.inform_label = QLabel("Выбрать точки для построения линии")
+        self.inform_label = QLabel("Выбрать точки линии платформы")
         self.inform_label.setFixedSize(LABEL_SIZE)
 
-        self.range_label = QLabel("Выбрать расстояние между краем платформы и линией")
-        self.range_label.setFixedSize(LABEL_SIZE)
+        self.edge_label = QLabel("Выбрать точки края платформы")
+        self.edge_label.setFixedSize(LABEL_SIZE)
 
         self.select_im_butt = QPushButton("Выбрать изображение")
         self.select_im_butt.clicked.connect(self.select_image)
@@ -33,31 +34,37 @@ class LeftPanel(QFrame):
         self.calc_butt = QPushButton("Вычислить")
         self.calc_butt.clicked.connect(self.calculate)
 
-        self.range_slider = QSlider(Qt.Orientation.Horizontal)
-        self.range_slider.setMinimum(BETWEEN_RANGE_MIN)
-        self.range_slider.setMaximum(BETWEEN_RANGE_MAX)
-        self.range_slider.sliderMoved.connect(self.drawline)
+        self.first_point_edge = QSlider(Qt.Orientation.Horizontal)
+        self.first_point_edge.setMinimum(BETWEEN_RANGE_MIN)
+        self.first_point_edge.setMaximum(BETWEEN_RANGE_MAX)
+        self.first_point_edge.sliderMoved.connect(self.drawline)
 
-        self.first_point = QSlider(Qt.Orientation.Horizontal)
-        self.second_point = QSlider(Qt.Orientation.Horizontal)
-        self.first_point.setMinimum(1)
-        self.second_point.setMinimum(1)
-        self.first_point.setMaximum(1)
-        self.second_point.setMaximum(1)
+        self.second_point_edge = QSlider(Qt.Orientation.Horizontal)
+        self.second_point_edge.setMinimum(BETWEEN_RANGE_MIN)
+        self.second_point_edge.setMaximum(BETWEEN_RANGE_MAX)
+        self.second_point_edge.sliderMoved.connect(self.drawline)
 
-        self.first_point.sliderMoved.connect(self.drawline)
-        self.second_point.sliderMoved.connect(self.drawline)
+        self.first_point_platform = QSlider(Qt.Orientation.Horizontal)
+        self.second_point_platform = QSlider(Qt.Orientation.Horizontal)
+        self.first_point_platform.setMinimum(1)
+        self.second_point_platform.setMinimum(1)
+        self.first_point_platform.setMaximum(1)
+        self.second_point_platform.setMaximum(1)
 
-        self.is_left_check = QCheckBox()
+        self.first_point_platform.sliderMoved.connect(self.drawline)
+        self.second_point_platform.sliderMoved.connect(self.drawline)
+
+        self.is_left_check = QCheckBox("Платформа слева")
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.select_im_butt)
         layout.addWidget(self.inform_label)
-        layout.addWidget(self.first_point)
-        layout.addWidget(self.second_point)
+        layout.addWidget(self.first_point_platform)
+        layout.addWidget(self.second_point_platform)
         layout.addWidget(self.is_left_check)
-        layout.addWidget(self.range_label)
-        layout.addWidget(self.range_slider)
+        layout.addWidget(self.edge_label)
+        layout.addWidget(self.first_point_edge)
+        layout.addWidget(self.second_point_edge)
         layout.addWidget(self.calc_butt)
 
     def select_image(self):
@@ -66,27 +73,27 @@ class LeftPanel(QFrame):
         pixmap = QPixmap(image_file[0])
         self.image_label.setPixmap(pixmap.scaled(self.image_label.size()))
         self.image = image_file[0]
-        self.first_point.setMaximum(cv2.imread(self.image).shape[1])
-        self.second_point.setMaximum(cv2.imread(self.image).shape[1])
+        self.first_point_platform.setMaximum(cv2.imread(self.image).shape[1])
+        self.second_point_platform.setMaximum(cv2.imread(self.image).shape[1])
 
-        self.first_point.setValue(1)
-        self.second_point.setValue(1)
+        self.first_point_platform.setValue(1)
+        self.second_point_platform.setValue(1)
 
     def drawline(self):
         new_image = cv2.imread(self.image)
 
         max_y = new_image.shape[0]
-        print(max_y)
 
-        cv2.line(new_image, (self.first_point.value(), 0),
-                 (self.second_point.value(), new_image.shape[0]), (0, 255, 0), 2)
+        cv2.line(new_image, (self.first_point_platform.value(), 0),
+                 (self.second_point_platform.value(), new_image.shape[0]), (0, 255, 0), 2)
 
         if self.is_left_check.checkState():
-            temp1 = self.first_point.value() + self.range_slider.value()
-            temp2 = self.second_point.value() + self.range_slider.value()
+            temp1 = self.first_point_platform.value() + self.first_point_edge.value()
+            temp2 = self.second_point_platform.value() + self.second_point_edge.value()
+            
         else:
-            temp1 = self.first_point.value() - self.range_slider.value()
-            temp2 = self.second_point.value() - self.range_slider.value()
+            temp1 = self.first_point_platform.value() - self.first_point_edge.value()
+            temp2 = self.second_point_platform.value() - self.second_point_edge.value()
 
         cv2.line(new_image, (temp1, 0), (temp2, new_image.shape[0]), (255, 0, 0), 2)
 
@@ -95,10 +102,15 @@ class LeftPanel(QFrame):
 
         self.image_label.setPixmap(pixmap.scaled(self.image_label.size()))
 
-        a = (self.second_point.value() - self.first_point.value()) / max_y
-        b = self.first_point.value()
+        a = (self.second_point_platform.value() - self.first_point_platform.value()) / max_y
+        b = self.first_point_platform.value()
 
-        self.coef = (a, b)
+        self.coef_platform = (a, b)
+
+        a = (temp2 - temp1) / max_y
+        b = temp1
+
+        self.coef_edge = (a, b)
 
     def calculate(self):
         new_image = cv2.imread(MODEL_IMAGE_URL)
@@ -111,26 +123,25 @@ class LeftPanel(QFrame):
         off_peoples_count = 0
 
         for person in persons:
-            point = person.xyxy[0][2:].clone()
+            platform_point = self.coef_platform[0] * person.xyxy[0][3] + self.coef_platform[1]
+            edge_point = self.coef_edge[0] * person.xyxy[0][3] + self.coef_edge[1]
+            range = abs(platform_point - edge_point)
             if self.is_left_check.checkState():
-                if 0 <= - point[0] + self.coef[0] * point[1] + self.coef[1] <= self.range_slider.value():
+                diff = person.xyxy[0][2] - platform_point
+                if 0 <= diff <= range:
                     between_peoples_count += 1
-                elif point[0] - self.coef[0] * point[1] + self.coef[1] > self.range_slider.value():
+                    self.rectangle_drawing(new_image, person, (255, 0, 0))
+                elif diff > range:
                     off_peoples_count += 1
+                    self.rectangle_drawing(new_image, person, (0, 0, 255))
             else:
-                point[0] = person.xyxy[0][0]
-                print(self.coef[0] * point[1] + self.coef[1] - point[0])
-                if 0 <= (self.coef[0] * point[1] + self.coef[1]) - point[0] <= self.range_slider.value():
+                diff = platform_point - person.xyxy[0][0]
+                if 0 <= diff <= range:
                     between_peoples_count += 1
-                    pt1 = [int(i) for i in person.xyxy[0][:2].tolist()]
-                    pt2 = [int(i) for i in person.xyxy[0][2:].tolist()]
-                    cv2.rectangle(new_image, pt2, pt1, (255, 0, 0), 2)
-                    print((self.coef[0] * point[1] + self.coef[1]) - point[0])
-                elif self.coef[0] * point[1] + self.coef[1] - point[0] > self.range_slider.value():
+                    self.rectangle_drawing(new_image, person, (255, 0, 0))
+                elif diff > range:
                     off_peoples_count += 1
-                    pt1 = [int(i) for i in person.xyxy[0][:2].tolist()]
-                    pt2 = [int(i) for i in person.xyxy[0][2:].tolist()]
-                    cv2.rectangle(new_image, pt2, pt1, (0, 0, 255), 2)
+                    self.rectangle_drawing(new_image, person, (0, 0, 255))
 
         cv2.imwrite(MODEL_IMAGE_URL, new_image)
         pixmap = QPixmap(MODEL_IMAGE_URL)
@@ -139,3 +150,9 @@ class LeftPanel(QFrame):
         print(f"Количество людей {len(persons)}")
         print(f"Количество за линией {between_peoples_count}")
         print(f"Количество за перроном {off_peoples_count}")
+
+    @staticmethod
+    def rectangle_drawing(image, points, color):
+        pt1 = [int(i) for i in points.xyxy[0][:2].tolist()]
+        pt2 = [int(i) for i in points.xyxy[0][2:].tolist()]
+        cv2.rectangle(image, pt2, pt1, color, 2)
