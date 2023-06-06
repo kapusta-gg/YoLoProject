@@ -3,7 +3,7 @@ from PyQt5.QtCore import QSize
 from leftpanel import LeftPanel
 from ultralytics import YOLO
 
-MAIN_WINDOW_SIZE = QSize(1000, 800)
+MAIN_WINDOW_SIZE = QSize(1200, 800)
 LABEL_WIDGET_SIZE = QSize(800, 700)
 
 

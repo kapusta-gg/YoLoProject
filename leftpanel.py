@@ -3,7 +3,7 @@ from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QPixmap
 import cv2
 
-LABEL_SIZE = QSize(200, 20)
+LABEL_SIZE = QSize(300, 20)
 MODEL_IMAGE_URL = "changed_im.png"
 BETWEEN_RANGE_MIN = 10
 BETWEEN_RANGE_MAX = 200
@@ -22,10 +22,10 @@ class LeftPanel(QFrame):
         self.coef_platform = None
         self.coef_edge = None
 
-        self.inform_label = QLabel("Выбрать точки линии платформы")
+        self.inform_label = QLabel("Настроить ограничительную линию платформы")
         self.inform_label.setFixedSize(LABEL_SIZE)
 
-        self.edge_label = QLabel("Выбрать точки края платформы")
+        self.edge_label = QLabel("Настроить линию края платформы")
         self.edge_label.setFixedSize(LABEL_SIZE)
 
         self.select_im_butt = QPushButton("Выбрать изображение")
@@ -55,6 +55,7 @@ class LeftPanel(QFrame):
         self.second_point_platform.sliderMoved.connect(self.drawline)
 
         self.is_left_check = QCheckBox("Платформа слева")
+        self.is_left_check.stateChanged.connect(self.drawline)
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.select_im_butt)
