@@ -6,7 +6,7 @@ import cv2
 LABEL_SIZE = QSize(300, 20)
 MODEL_IMAGE_URL = "changed_im.png"
 BETWEEN_RANGE_MIN = 10
-BETWEEN_RANGE_MAX = 200
+BETWEEN_RANGE_MAX = 400
 
 
 class LeftPanel(QFrame):

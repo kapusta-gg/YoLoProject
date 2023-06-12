@@ -1,4 +1,0 @@
-PyQt5==5.15.9
-ultralytics==8.0.112
-opencv-python==4.7.0.72
-numpy==1.24.3
