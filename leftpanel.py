@@ -103,15 +103,15 @@ class LeftPanel(QFrame):
 
         self.image_label.setPixmap(pixmap.scaled(self.image_label.size()))
 
-        a = (self.second_point_platform.value() - self.first_point_platform.value()) / max_y
+        k = (self.second_point_platform.value() - self.first_point_platform.value()) / max_y
         b = self.first_point_platform.value()
 
-        self.coef_platform = (a, b)
+        self.coef_platform = (k, b)
 
-        a = (temp2 - temp1) / max_y
+        k = (temp2 - temp1) / max_y
         b = temp1
 
-        self.coef_edge = (a, b)
+        self.coef_edge = (k, b)
 
     def calculate(self):
         new_image = cv2.imread(MODEL_IMAGE_URL)
